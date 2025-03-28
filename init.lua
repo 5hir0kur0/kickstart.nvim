@@ -581,7 +581,7 @@ require('lazy').setup({
           },
         } or {},
         virtual_text = {
-          source = 'if_many',
+          source = true,
           spacing = 2,
           format = function(diagnostic)
             local diagnostic_message = {
@@ -592,6 +592,10 @@ require('lazy').setup({
             }
             return diagnostic_message[diagnostic.severity]
           end,
+        },
+        virtual_lines = {
+          -- Only show virtual line diagnostics for the current cursor line
+          current_line = true,
         },
       }
 
