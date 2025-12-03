@@ -5,7 +5,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -118,12 +118,29 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<leader>w', '<C-w>', { desc = '[W]indow commands' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+
+-- Some other helix-inspired mappings
+
+vim.keymap.set('v', '<leader>y', '"+y', { desc = '[Y]ank to system clipboard' })
+vim.keymap.set('n', '<leader>y', '"+yl', { desc = '[Y]ank to system clipboard' })
+vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p', { desc = '[P]aste system clipboard' })
+vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P', { desc = '[P]aste system clipboard before' })
+vim.keymap.set('n', '<leader>k', 'K', { desc = '[K] Docs for item' })
+-- somehow, just mapping this to `gc` didn't work
+vim.keymap.set({ 'n', 'v' }, '<C-c>', ':norm vgc<CR>', { desc = '<C-c> Comment selection' })
+vim.keymap.set({ 'n', 'v' }, '<leader>c', ':norm vgc<CR>', { desc = '[C]omment selection' })
+vim.keymap.set({ 'n', 'v', 'o' }, 'g|', '|', { desc = '[G]oto | Column' })
+vim.keymap.set({ 'n', 'v', 'o' }, 'ge', 'G', { desc = '[G]oto [E]nd of File' })
+vim.keymap.set({ 'n', 'v', 'o' }, 'gh', '0', { desc = '[G]oto [H] line start' })
+vim.keymap.set({ 'n', 'v', 'o' }, 'gl', '$', { desc = '[G]oto [L]ine end' })
+vim.keymap.set({ 'n', 'v', 'o' }, 'g.', 'gi', { desc = '[G]oto [.] last modification' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -289,10 +306,9 @@ require('lazy').setup({
 
       -- Document existing key chains
       spec = {
-        { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
-        { '<leader>s', group = '[S]earch' },
+        { '<leader>.', group = '[.] Telescope' },
         { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>=', group = '[=] Git', mode = { 'n', 'v' } },
       },
     },
   },
@@ -372,41 +388,53 @@ require('lazy').setup({
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
-      vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
-      vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch [C]ommands' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
-      vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
-      vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sd', builtin.live_grep, { desc = '[S]earch [D]irectory (grep)' })
-      vim.keymap.set('n', '<leader>cx', builtin.diagnostics, { desc = '[C]ode (x) Diagnostics' })
-      vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-      vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+      local utils = require 'telescope.utils'
+      vim.keymap.set('n', '<leader>.h', builtin.help_tags, { desc = '[H] Search Help' })
+      vim.keymap.set('n', '<leader>?', builtin.keymaps, { desc = '[?] Search Keymaps' })
+      vim.keymap.set('n', '<leader>:', builtin.commands, { desc = '[:] Command Palette' })
+      vim.keymap.set('n', '<leader><leader>', function()
+        builtin.find_files { follow = true }
+      end, { desc = '[ ] File Picker' })
+      vim.keymap.set('n', '<leader>f', function()
+        builtin.find_files { follow = true }
+      end, { desc = '[F]ile Picker' })
+      vim.keymap.set('n', '<leader>F', function()
+        builtin.find_files { cwd = utils.buffer_dir() }
+      end, { desc = '[F]file picker at buffer’s CWD' })
+      vim.keymap.set('n', '<leader>.s', builtin.builtin, { desc = '[S]elect Telescope' })
+      vim.keymap.set('n', '<leader>/', builtin.live_grep, { desc = '[/] Search Directory (grep)' })
+      vim.keymap.set('n', '<leader>d', function()
+        builtin.diagnostics { bufnr = 0 }
+      end, { desc = '[D]iagnostics (current buf)' })
+      vim.keymap.set('n', '<leader>D', builtin.diagnostics, { desc = '[D]iagnostics' })
+      vim.keymap.set('n', "<leader>'", builtin.resume, { desc = "['] Open last picker" })
+      vim.keymap.set('n', '<leader>..', builtin.oldfiles, { desc = '[.] Search Recent Files' })
       vim.keymap.set('n', '<leader>b', builtin.buffers, { desc = '[B]uffers' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>j', builtin.jumplist, { desc = '[J]umplist' })
+      vim.keymap.set('n', '<leader>g', builtin.git_status, { desc = '[G]it changed files' })
 
       -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
+      vim.keymap.set('n', '<leader>.b', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
         builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
           winblend = 10,
           previewer = false,
         })
-      end, { desc = '[/] Fuzzily search in current buffer' })
+      end, { desc = '[B] Search in current buffer' })
 
       -- It's also possible to pass additional configuration options.
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
-      vim.keymap.set('n', '<leader>s/', function()
+      vim.keymap.set('n', '<leader>./', function()
         builtin.live_grep {
           grep_open_files = true,
           prompt_title = 'Live Grep in Open Files',
         }
-      end, { desc = '[S]earch [/] in Open Files' })
+      end, { desc = '[/] Search in Open Files' })
 
       -- Shortcut for searching your Neovim configuration files
-      vim.keymap.set('n', '<leader>sn', function()
-        builtin.find_files { cwd = vim.fn.stdpath 'config' }
-      end, { desc = '[S]earch [N]eovim files' })
+      vim.keymap.set('n', '<leader>.n', function()
+        builtin.find_files { cwd = vim.fn.stdpath 'config', follow = true }
+      end, { desc = '[N] Search NeoVim files' })
     end,
   },
 
@@ -485,18 +513,18 @@ require('lazy').setup({
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
-          map('<leader>cr', vim.lsp.buf.rename, '[C]ode [R]ename')
+          map('<leader>r', vim.lsp.buf.rename, '[R]ename symbol')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
+          map('<leader>a', vim.lsp.buf.code_action, '[A]ction (LSP)', { 'n', 'x' })
 
           -- Find references for the word under your cursor.
-          map('gD', require('telescope.builtin').lsp_references, '[G]oto (D) References')
+          map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+          map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
 
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
@@ -505,20 +533,20 @@ require('lazy').setup({
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
-          map('<leader>cD', vim.lsp.buf.declaration, '[C]ode [D]eclaration')
-
-          -- Fuzzy find all the symbols in your current document.
-          --  Symbols are things like variables, functions, types, etc.
-          map('<leader>si', require('telescope.builtin').lsp_document_symbols, '[D]ocument [I]tems (Symbols)')
-
-          -- Fuzzy find all the symbols in your current workspace.
-          --  Similar to document symbols, except searches over your entire project.
-          map('<leader>sI', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [I]tems (Symbols)')
+          map('gD', vim.lsp.buf.declaration, '[C]ode [D]eclaration')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
-          map('<leader>ct', require('telescope.builtin').lsp_type_definitions, '[C]ode [T]ype Definition')
+          map('gy', require('telescope.builtin').lsp_type_definitions, '[G]ode [Y] Type Def.')
+
+          -- Fuzzy find all the symbols in your current document.
+          --  Symbols are things like variables, functions, types, etc.
+          map('<leader>s', require('telescope.builtin').lsp_document_symbols, '[S]ymbol Picker')
+
+          -- Fuzzy find all the symbols in your current workspace.
+          --  Similar to document symbols, except searches over your entire project.
+          map('<leader>S', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[S]ymbol Picker (Workspace)')
 
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
@@ -672,7 +700,7 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)s
         automatic_installation = false,
         handlers = {
           function(server_name)
@@ -694,12 +722,12 @@ require('lazy').setup({
     cmd = { 'ConformInfo' },
     keys = {
       {
-        '<leader>f',
+        '<C-S-i>',
         function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end,
         mode = '',
-        desc = '[F]ormat buffer',
+        desc = '[C-S-i] Format buffer',
       },
     },
     opts = {
@@ -839,7 +867,7 @@ require('lazy').setup({
       ---@diagnostic disable-next-line: missing-fields
       require('tokyonight').setup {
         styles = {
-          comments = { italic = false }, -- Disable italics in comments
+          comments = { italic = true },
         },
       }
 
@@ -878,7 +906,7 @@ require('lazy').setup({
           find = 'sf', -- Find surrounding (to the right)
           find_left = 'sF', -- Find surrounding (to the left)
           highlight = 'sh', -- Highlight surrounding
-          replace = 'cr', -- Replace surrounding
+          replace = 'cs', -- Replace surrounding
           update_n_lines = 'sn', -- Update `n_lines`
 
           suffix_last = 'l', -- Suffix to search with "prev" method
