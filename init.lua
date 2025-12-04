@@ -2,7 +2,7 @@
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.maplocalleader = ' k'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -132,7 +132,7 @@ vim.keymap.set('v', '<leader>y', '"+y', { desc = '[Y]ank to system clipboard' })
 vim.keymap.set('n', '<leader>y', '"+yl', { desc = '[Y]ank to system clipboard' })
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p', { desc = '[P]aste system clipboard' })
 vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P', { desc = '[P]aste system clipboard before' })
-vim.keymap.set('n', '<leader>k', 'K', { desc = '[K] Docs for item' })
+-- vim.keymap.set('n', '<leader>k', 'K', { desc = '[K] Docs for item' })
 -- somehow, just mapping this to `gc` didn't work
 vim.keymap.set({ 'n', 'v' }, '<C-c>', ':norm vgc<CR>', { desc = '<C-c> Comment selection' })
 vim.keymap.set({ 'n', 'v' }, '<leader>c', ':norm vgc<CR>', { desc = '[C]omment selection' })
